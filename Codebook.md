@@ -88,6 +88,6 @@ The following files are available for the train and test data. Their description
 
 * **Tidy data**
  * Melt data based on id_labels and measure by data_labels
- * Apply mean function to dataset using dcast function
+ * dcast molten dataset and apply mean function
  * Output data to file
 
