@@ -1,46 +1,75 @@
 # run_analysis.R  
   
-#Load dplyr library  
-library(dplyr)  
-  
-#Get train_X and train_Y then combine them into train_Data  
-setwd("/Users/yingkitlee/Downloads/UCI HAR Dataset/train")  
-a <- list.files(pattern=".*.txt")  
-train_Data <- do.call(cbind,lapply(a, read.table))  
+#Load required libraries  
+if (!require("data.table")) {
+  install.packages("data.table")
+}
 
-#Get test_X and test_Y then combine them into test_Data  
-setwd("/Users/yingkitlee/Downloads/UCI HAR Dataset/test")  
-b <- list.files(pattern=".*.txt")  
-test_Data <- do.call(cbind,lapply(b, read.table))  
+if (!require("reshape2")) {
+  install.packages("reshape2")
+}
 
-#Merges the training and the test sets to create one data set 
-dataset <- rbind(train_Data, test_Data)  
+require("data.table")
+require("reshape2")
 
-#Extracts only the measurements on the mean and standard deviation for each measurement  
-apply(train_Data, 1, mean)  
-apply(train_Data, 1, sd)  
-apply(test_Data, 1, mean)  
-apply(test_Data, 1, sd)  
-  
-#Uses descriptive activity names to name the activities in the data set  
-dataset$V1[dataset$V1 == 1] <- "WALKING"  
-dataset$V1[dataset$V1 == 2] <- "WALKING UPSTAIRS"  
-dataset$V1[dataset$V1 == 3] <- "WALKING_DOWNSTAIRS"  
-dataset$V1[dataset$V1 == 4] <- "SITTING"  
-dataset$V1[dataset$V1 == 5] <- "STANDING"  
-dataset$V1[dataset$V1 == 6] <- "LAYING"  
-  
-#Read features  
-features <- read.table("/Users/yingkitlee/Downloads/UCI HAR Dataset/features.txt")  
-feature <- rbind(features[,c(1,2)], matrix(c(562,"activity", 563, "subject"), nrow = 2, byrow = TRUE))  
+#Set working directory
+setwd("/Users/yingkitlee/Downloads/UCI HAR Dataset")  
 
-#Appropriately labels the data set with descriptive variable names  
-colnames(dataset) <- feature[,2]  
-  
-#From the data set in step 4, creates a second, independent tidy data set with the average of each variable for each activity and each subject  
-act_mean <- aggregate(dataset$activity, dataset, mean)  
-sub_mean <- aggregate(act_mean$subject, act_mean, mean)  
-new_table <- sub_mean[,c(564,565)]  
-  
-#Output data  
-write.table(new_table, file = "/Users/yingkitlee/Downloads/new_table.txt", row.name = F, quote = F)  
+
+# Load: activity labels
+activity_labels <- read.table("./activity_labels.txt")[,2]
+
+# Load: features
+features <- read.table("./features.txt")[,2]
+
+# Extract only the mean and standard deviation
+extract_features <- grepl("mean|std", features)
+
+
+#Get and process X_train
+X_train <- read.table("./train/X_train.txt")
+names(X_train) = features
+X_train = X_train[,extract_features]
+
+#Get and process y_train
+y_train <- read.table("./train/y_train.txt")
+y_train[,2] = activity_labels[y_train[,1]]
+names(y_train) = c("Activity_ID", "Activity_Label")
+
+#Get and process subject_train
+subject_train <- read.table("./train/subject_train.txt")
+names(subject_train) = "subject"
+
+# Combine data into train_data
+train_data <- cbind(as.data.table(subject_train), y_train, X_train)
+
+
+#Get and process X_test
+X_test <- read.table("./test/X_test.txt")
+names(X_test) = features
+X_test = X_test[,extract_features]
+
+#Get and process y_test
+y_test <- read.table("./test/y_test.txt")
+y_test[,2] = activity_labels[y_test[,1]]
+names(y_test) = c("Activity_ID", "Activity_Label")
+
+#Get and process subject_test
+subject_test <- read.table("./test/subject_test.txt")
+names(subject_test) = "subject"
+
+# Combine data into test_data
+test_data <- cbind(as.data.table(subject_test), y_test, X_test)
+
+
+# Merge test and train data
+data = rbind(test_data, train_data)
+
+id_labels   = c("subject", "Activity_ID", "Activity_Label")
+data_labels = setdiff(colnames(data), id_labels)
+melt_data      = melt(data, id = id_labels, measure.vars = data_labels)
+
+# Apply mean function to dataset using dcast function
+tidy_data   = dcast(melt_data, subject + Activity_Label ~ variable, mean)
+
+write.table(tidy_data, file = "./tidy_data.txt", row.name = FALSE)
