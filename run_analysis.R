@@ -65,6 +65,7 @@ test_data <- cbind(as.data.table(subject_test), y_test, X_test)
 # Merge test and train data
 data = rbind(test_data, train_data)
 
+# Melt data based on id_labels and measure by data_labels
 id_labels   = c("subject", "Activity_ID", "Activity_Label")
 data_labels = setdiff(colnames(data), id_labels)
 melt_data      = melt(data, id = id_labels, measure.vars = data_labels)
