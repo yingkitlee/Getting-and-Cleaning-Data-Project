@@ -16,6 +16,10 @@ https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Datas
 * Codebook.md - ***Describes the variables, the data, and any transformations or work performed to clean up the data***
 * run_analysis.R - ***R Script of the code***
 
+## Required Libraries: ##
+* data.table
+* reshape2
+
 ## Accomplishment of run_analysis.R ##
 * Merges the training and the test sets to create one data set.
 * Extracts only the measurements on the mean and standard deviation for each measurement.
@@ -25,35 +29,8 @@ https://d396qusza40orc.cloudfront.net/getdata%2Fprojectfiles%2FUCI%20HAR%20Datas
 
 **During runtime you will have to specify the working directory**
 
-## Required Libraries: ##
-* data.table
-* reshape2
+## Steps to work on this course project
 
-## Explanation of the script ##
-
-* **Load required libraries.**
-
-* **Set working directory.**
- 
-* **Load activity labels and features**
-
-* **Extract only the mean and standard deviation**
-  
-* **Get and process training data**
- * Read X_train data and labeled data by features then extracted data based on mean and std measurements
- * Read y_train data and labeled data by activities
- * Read subject_train data
- * Combine training data based on subject, extracted features and activities
-
-* **Get and process testing data**
- * Read X_test data and labeled data by features then extracted data based on mean and std measurements
- * Read y_test data and labeled data by activities
- * Read subject_test data
- * Combine testing data based on subject, extracted features and activities
- 
-* **Merge test and train data**
-
-* **Tidy data**
- * Melt data based on id_labels and measure by data_labels
- * Apply mean function to dataset using dcast function
- * Output data to file
+1. Download the data source and put into a folder on your local drive. You'll have a ```UCI HAR Dataset``` folder.
+2. Download ```run_analysis.R``` and update your working directory define in the script.
+3. Run ```source("run_analysis.R")```, then it will generate a new file ```tiny_data.txt``` in your working directory.
